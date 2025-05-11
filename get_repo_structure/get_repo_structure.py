@@ -8,22 +8,6 @@ import uuid
 import pandas as pd
 from tqdm import tqdm
 
-repo_to_top_folder = {
-    "django/django": "django",
-    "sphinx-doc/sphinx": "sphinx",
-    "scikit-learn/scikit-learn": "scikit-learn",
-    "sympy/sympy": "sympy",
-    "pytest-dev/pytest": "pytest",
-    "matplotlib/matplotlib": "matplotlib",
-    "astropy/astropy": "astropy",
-    "pydata/xarray": "xarray",
-    "mwaskom/seaborn": "seaborn",
-    "psf/requests": "requests",
-    "pylint-dev/pylint": "pylint",
-    "pallets/flask": "flask",
-}
-
-
 def checkout_commit(repo_path, commit_id):
     """Checkout the specified commit in the given local git repository.
     :param repo_path: Path to the local git repository
@@ -32,9 +16,9 @@ def checkout_commit(repo_path, commit_id):
     """
     try:
         # Change directory to the provided repository path and checkout the specified commit
-        print(f"Checking out commit {commit_id} in repository at {repo_path}...")
-        subprocess.run(["git", "-C", repo_path, "checkout", commit_id], check=True)
-        print("Commit checked out successfully.")
+        # print(f"Checking out commit {commit_id} in repository at {repo_path}...")
+        subprocess.run(["git", "-C", repo_path, "checkout", commit_id], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # print("Commit checked out successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while running git command: {e}")
     except Exception as e:
@@ -43,20 +27,19 @@ def checkout_commit(repo_path, commit_id):
 
 def clone_repo(repo_name, repo_playground):
     try:
-
-        print(
-            f"Cloning repository from https://github.com/{repo_name}.git to {repo_playground}/{repo_to_top_folder[repo_name]}..."
-        )
+        top_folder = repo_name.split("/")[1]
         subprocess.run(
             [
                 "git",
                 "clone",
                 f"https://github.com/{repo_name}.git",
-                f"{repo_playground}/{repo_to_top_folder[repo_name]}",
+                f"{repo_playground}/{top_folder}",
             ],
             check=True,
+            # do not print to console
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
-        print("Repository cloned successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while running git command: {e}")
     except Exception as e:
@@ -77,11 +60,12 @@ def get_project_structure_from_scratch(
     os.makedirs(repo_playground)
 
     clone_repo(repo_name, repo_playground)
-    checkout_commit(f"{repo_playground}/{repo_to_top_folder[repo_name]}", commit_id)
-    structure = create_structure(f"{repo_playground}/{repo_to_top_folder[repo_name]}")
+    top_folder = repo_name.split("/")[1]
+    checkout_commit(f"{repo_playground}/{top_folder}", commit_id)
+    structure = create_structure(f"{repo_playground}/{top_folder}")
     # clean up
     subprocess.run(
-        ["rm", "-rf", f"{repo_playground}/{repo_to_top_folder[repo_name]}"], check=True
+        ["rm", "-rf", f"{repo_playground}/{top_folder}"], check=True
     )
     d = {
         "repo": repo_name,

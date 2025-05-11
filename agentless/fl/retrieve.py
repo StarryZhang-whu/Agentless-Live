@@ -97,7 +97,7 @@ def retrieve(args):
     else:
         found_files = []
 
-    swe_bench_data = load_dataset(args.dataset, split="test")
+    swe_bench_data = load_dataset("json", data_files=args.dataset, split="train")
     prev_o = load_jsonl(args.output_file) if os.path.exists(args.output_file) else []
 
     if args.num_threads == 1:
@@ -158,7 +158,6 @@ def main():
         "--dataset",
         type=str,
         default="princeton-nlp/SWE-bench_Lite",
-        choices=["princeton-nlp/SWE-bench_Lite", "princeton-nlp/SWE-bench_Verified"],
     )
 
     args = parser.parse_args()

@@ -343,7 +343,7 @@ def process_loc(loc, args, swe_bench_data, prev_o, write_lock=None):
     # Construct top-n file context
     file_to_edit_locs = dict()
 
-    if "found_edit_locs" in loc:
+    if "found_edit_locs" in loc and loc["found_edit_locs"]:
         file_to_edit_locs = loc["found_edit_locs"]
 
     topn_content, file_loc_intervals = construct_topn_file_context(
@@ -362,6 +362,7 @@ def process_loc(loc, args, swe_bench_data, prev_o, write_lock=None):
     if topn_content.strip() == "":
         if write_lock is not None:
             write_lock.acquire()
+        print(args.output_file)
         with open(args.output_file, "a") as f:
             f.write(
                 json.dumps(
@@ -535,7 +536,7 @@ def repair(args):
     with open(f"{args.output_folder}/args.json", "w") as f:
         json.dump(vars(args), f, indent=4)
 
-    swe_bench_data = load_dataset(args.dataset, split="test")
+    swe_bench_data = load_dataset("json", data_files=args.dataset, split="train")
     locs = load_jsonl(args.loc_file)
     prev_o = load_jsonl(args.output_file) if os.path.exists(args.output_file) else []
 
@@ -562,7 +563,10 @@ def repair(args):
                 total=len(locs),
                 colour="MAGENTA",
             ):
+                # try:
                 future.result()
+                # except Exception as e:
+                    # print(f"Error processing {futures[future]}: {e}")
 
 
 def post_process_raw_output(
@@ -747,12 +751,6 @@ def main():
         "--model",
         type=str,
         default="gpt-4o-2024-05-13",
-        choices=[
-            "gpt-4o-2024-05-13",
-            "deepseek-coder",
-            "gpt-4o-mini-2024-07-18",
-            "claude-3-5-sonnet-20241022",
-        ],
     )
     parser.add_argument(
         "--backend",
@@ -783,7 +781,6 @@ def main():
         "--dataset",
         type=str,
         default="princeton-nlp/SWE-bench_Lite",
-        choices=["princeton-nlp/SWE-bench_Lite", "princeton-nlp/SWE-bench_Verified"],
     )
 
     args = parser.parse_args()

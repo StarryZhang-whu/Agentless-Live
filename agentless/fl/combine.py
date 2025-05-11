@@ -25,9 +25,12 @@ def combine_file_level(args):
         instance_id = pred["instance_id"]
 
         model_loc = pred["found_files"]
-        retrieve_loc = [x for x in embed_used_locs if x["instance_id"] == instance_id][
-            0
-        ]["found_files"]
+        lst = [x for x in embed_used_locs if x["instance_id"] == instance_id]
+        if len(lst) == 0:
+            print(f"Instance {instance_id} not found in retrieval loc file")
+            continue
+        else:
+            retrieve_loc = lst[0]["found_files"]
 
         combined_loc_counter = Counter()
         combined_locs = []
@@ -67,7 +70,9 @@ def main():
     args = parser.parse_args()
 
     args.output_file = os.path.join(args.output_folder, args.output_file)
-    assert not os.path.exists(args.output_file), "Output file already exists"
+    
+    if os.path.exists(args.output_file):
+        os.remove(args.output_file)
 
     os.makedirs(args.output_folder, exist_ok=True)
 

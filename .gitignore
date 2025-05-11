@@ -179,9 +179,7 @@ results/
 logs/
 dev/
 
-# data files
-*.jsonl
-*.json
-
 # Jupyter Notebooks
 *.ipynb
+
+embedding
